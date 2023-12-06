@@ -43,7 +43,6 @@ with open("input.txt") as f:
                 break
             else:
                 valid_grab = True
-                continue
 
         if valid_grab:
             sum += id
