@@ -8,22 +8,19 @@ sum = 0
 with open("input.txt") as f:
     lines = f.readlines()
 
-    for line_index, current_line in enumerate(lines):
-        current_line_list = ''.join(current_line)
+    for line_index, curr_line in enumerate(lines):
+        curr_line = ''.join(curr_line)
         digit_start_pos = None
         digit_end_pos = None
 
         if line_index == 0:
-            prev_line_list = current_line_list
+            prev_line = curr_line
         if line_index >= len(lines)-1:
-            next_line_list = None
+            next_line = curr_line
         else:
-            next_line_list = lines[line_index+1]
-
-        if next_line_list is None:
-            next_line_list = current_line_list
-            
-        for pos, c in enumerate(current_line_list):
+            next_line = lines[line_index+1]
+           
+        for pos, c in enumerate(curr_line):
 
             # start of sequence
             if c.isdigit() and digit_start_pos is None:
@@ -38,20 +35,20 @@ with open("input.txt") as f:
             elif not c.isdigit() and digit_start_pos is not None:
 
                 if digit_start_pos > 0:
-                    start_seq = digit_start_pos - 1
+                    tmp = digit_start_pos - 1
                 else:
-                    start_seq = 0
+                    tmp = 0
 
                 # now check for symbols in sequence surroundings, same for prev and next sequence
-                if not bool(re.match(PATTERN, current_line_list[start_seq:digit_end_pos+2])) or \
-                   not bool(re.match(PATTERN, prev_line_list[start_seq:digit_end_pos+2])) or \
-                   not bool(re.match(PATTERN, next_line_list[start_seq:digit_end_pos+2])):
-                    part_number = ''.join(current_line_list[digit_start_pos:digit_end_pos+1])
+                if not bool(re.match(PATTERN, curr_line[tmp:digit_end_pos+2])) or \
+                   not bool(re.match(PATTERN, prev_line[tmp:digit_end_pos+2])) or \
+                   not bool(re.match(PATTERN, next_line[tmp:digit_end_pos+2])):
+                    part_number = ''.join(curr_line[digit_start_pos:digit_end_pos+1])
                     sum += int(part_number)
                 
                 digit_start_pos = None
                 digit_end_pos = None
 
-        prev_line_list = current_line_list
+        prev_line = curr_line
     
 print(sum)
