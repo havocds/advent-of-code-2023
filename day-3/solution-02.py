@@ -1,94 +1,61 @@
 import re
+from dataclasses import dataclass
+from itertools import product
 
-PATTERN = r"\d+"
-
-
-def go_forwards(line, start=0):
-    part_number = ""
-    for c in line[start:]:
-        if c.isdigit():
-            part_number = part_number + c
-        else:
-            break
-    return part_number
+INPUT_FILE = "./input.txt"
+DIGITS_OR_STAR = r"\d+|\*"
+ADJACENT_POSITIONS = [-1, 0, 1]
+SYMBOL = "*"
 
 
-def go_backwards(line, end=0):
-    part_number = ""
-    for c in reversed(line[:end]):
-        if c.isdigit():
-            part_number = part_number + c
-        else:
-            break
-    return part_number[::-1]
+@dataclass(frozen=True)
+class Match:
+    text: str
+    row: int
+    start: int
+    end: int
 
 
-with open("input.txt") as f:
-    lines = f.readlines()
+def read_input(path) -> list:
+    with open(path) as f:
+        return [line.strip() for line in f]
 
-    sum = 0
 
-    for line_index, curr_line in enumerate(lines):
-        curr_line = "".join(curr_line.strip())
+def has_adjacents(mult, num) -> bool:
+    if (mult.row - num.row in ADJACENT_POSITIONS) and (
+        mult.start - num.start in ADJACENT_POSITIONS
+        or mult.end - num.end in ADJACENT_POSITIONS
+    ):
+        return True
+    else:
+        return False
 
-        if line_index == 0:
-            prev_line = curr_line
-        if line_index >= len(lines) - 1:
-            next_line = curr_line
-        else:
-            next_line = lines[line_index + 1]
 
-        for pos, c in enumerate(curr_line):
-            if c == "*":
-                adjacents = 0
+def main():
+    _sum = 0
+    matches = list()
+    adjacents = dict()
+    lines = read_input(INPUT_FILE)
 
-                # check number of adjacents before doing anything
-                if curr_line[pos - 1].isdigit():
-                    adjacents += 1
-                if curr_line[pos + 1].isdigit():
-                    adjacents += 1
-                adjacents += len(re.findall(PATTERN, prev_line[pos - 1:pos + 2]))
-                adjacents += len(re.findall(PATTERN, next_line[pos - 1:pos + 2]))
+    for row, line in enumerate(lines):
+        matched_items = re.finditer(DIGITS_OR_STAR, line)
 
-                if adjacents != 2:
-                    continue
+        for item in matched_items:
+            matches.append(Match(item.group(), row, item.start(), item.end()))
 
-                part_numbers = list()
+    stars = [m for m in matches if m.text == SYMBOL]
+    nums = [m for m in matches if m.text != SYMBOL]
 
-                # part numbers next to *
-                if curr_line[pos - 1].isdigit():
-                    part_numbers.append(go_backwards(curr_line, end=pos))
-                if curr_line[pos + 1].isdigit():
-                    part_numbers.append(go_forwards(curr_line, start=pos + 1))
+    for star, num in product(stars, nums):
+        if has_adjacents(star, num):
+            adjacents.setdefault(star, []).append(num)
 
-                # part number in prev line at * position
-                if prev_line[pos].isdigit():
-                    part_numbers.append(
-                        go_backwards(prev_line, end=pos + 1)
-                        + go_forwards(prev_line, start=pos + 1)
-                    )
-                # part number in prev line at position -1 or +1 of *
-                else:
-                    if prev_line[pos - 1].isdigit():
-                        part_numbers.append(go_backwards(prev_line, end=pos))
-                    if prev_line[pos + 1].isdigit():
-                        part_numbers.append(go_forwards(prev_line, start=pos + 1))
+    for star, num in adjacents.items():
+        if len(num) > 1:
+            _sum += int(num[0].text) * int(num[1].text)
 
-                # part number in next line at * position
-                if next_line[pos].isdigit():
-                    part_numbers.append(
-                        go_backwards(next_line, end=pos + 1)
-                        + go_forwards(next_line, start=pos + 1)
-                    )
-                # part number in next line at position -1 or +1 of *
-                else:
-                    if next_line[pos - 1].isdigit():
-                        part_numbers.append(go_backwards(next_line, end=pos))
-                    if next_line[pos + 1].isdigit():
-                        part_numbers.append(go_forwards(next_line, start=pos + 1))
+    print(_sum)
 
-                sum += int(part_numbers[0]) * int(part_numbers[1])
 
-        prev_line = curr_line
-
-print(sum)
+if __name__ == "__main__":
+    main()
