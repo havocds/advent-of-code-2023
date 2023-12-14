@@ -1,54 +1,48 @@
 import re
+from typing import Final
 
-# this pattern returns true when only dots and digits found
-PATTERN = r'^[.\d]+$'
+INPUT_FILE: Final = "./test_input.txt"
+DIGITS: Final = r"\d+"
 
-sum = 0
 
-with open("input.txt") as f:
-    lines = f.readlines()
+def read_input(path) -> list:
+    with open(path) as f:
+        return [line.strip() for line in f]
 
-    for line_index, curr_line in enumerate(lines):
-        curr_line = ''.join(curr_line)
-        digit_start_pos = None
-        digit_end_pos = None
 
-        if line_index == 0:
-            prev_line = curr_line
-        if line_index >= len(lines)-1:
-            next_line = curr_line
-        else:
-            next_line = lines[line_index+1]
-           
-        for pos, c in enumerate(curr_line):
+def is_symbol(char: str) -> bool:
+    return char != "." and not char.isdigit()
 
-            # start of sequence
-            if c.isdigit() and digit_start_pos is None:
-                digit_start_pos = pos
-                digit_end_pos = pos
 
-            # currently in sequence
-            elif c.isdigit() and digit_start_pos is not None:
-                digit_end_pos = pos
+def main() -> None:
+    _sum: int = 0
+    lines = read_input(INPUT_FILE)
 
-            # end of sequence
-            elif not c.isdigit() and digit_start_pos is not None:
+    for row, line in enumerate(lines):
+        matched_items = re.finditer(DIGITS, line)
 
-                if digit_start_pos > 0:
-                    tmp = digit_start_pos - 1
-                else:
-                    tmp = 0
+        for item in matched_items:
+            start_index = item.start() - 1
+            end_index = item.end()
+            number = int(item.group())
 
-                # now check for symbols in sequence surroundings, same for prev and next sequence
-                if not bool(re.match(PATTERN, curr_line[tmp:digit_end_pos+2])) or \
-                   not bool(re.match(PATTERN, prev_line[tmp:digit_end_pos+2])) or \
-                   not bool(re.match(PATTERN, next_line[tmp:digit_end_pos+2])):
-                    part_number = ''.join(curr_line[digit_start_pos:digit_end_pos+1])
-                    sum += int(part_number)
-                
-                digit_start_pos = None
-                digit_end_pos = None
+            if (start_index >= 0 and is_symbol(line[start_index])) or (
+                end_index < len(line) and is_symbol(line[end_index])
+            ):
+                _sum += number
+                continue
 
-        prev_line = curr_line
-    
-print(sum)
+            for i in range(start_index, end_index + 1):
+                if i >= len(line):
+                    continue
+                if (i > 0 and is_symbol(lines[row - 1][i])) or (
+                    i < len(lines) - 2 and is_symbol(lines[row + 1][i])
+                ):
+                    _sum += number
+                    break
+
+    print(_sum)
+
+
+if __name__ == "__main__":
+    main()
