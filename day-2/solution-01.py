@@ -1,31 +1,38 @@
 import re
 from enum import Enum
 
+ID_PATTERN = re.compile(r"^\bGame\s(\d+)\b", re.IGNORECASE)
+DIGIT_PATTERN = re.compile(r"\b(\d+)\s(?:red|blue|green)\b", re.IGNORECASE)
+COLOR_PATTERN = re.compile(r"\b\d+\s(red|blue|green)\b", re.IGNORECASE)
+
+INPUT_FILE = "./input.txt"
+
+
 class Cube(Enum):
     RED = 12
     GREEN = 13
     BLUE = 14
     MAX = 15
 
-ID_PATTERN = re.compile(r"^\bGame\s(\d+)\b", re.IGNORECASE)
-DIGIT_PATTERN = re.compile(r"\b(\d+)\s(?:red|blue|green)\b", re.IGNORECASE)
-COLOR_PATTERN = re.compile(r"\b\d+\s(red|blue|green)\b", re.IGNORECASE)
 
-sum = 0
+def read_input(path: str) -> list:
+    with open(path) as f:
+        return [line.strip() for line in f]
 
-with open("input.txt") as f:
-    lines = f.readlines()
+
+def main():
+    sum = 0
+    lines = read_input(INPUT_FILE)
 
     for line in lines:
+        if not line.strip():
+            continue
 
-        if not line.strip(): 
-            continue
-        
         number_of_cubes = list(map(int, DIGIT_PATTERN.findall(line)))
-        
-        if sorted(number_of_cubes, reverse=True)[0] >= Cube.MAX.value: 
+
+        if sorted(number_of_cubes, reverse=True)[0] >= Cube.MAX.value:
             continue
-        
+
         id = int(ID_PATTERN.findall(line)[0])
 
         cube_colors = list(map(str.lower, COLOR_PATTERN.findall(line)))
@@ -46,5 +53,9 @@ with open("input.txt") as f:
 
         if valid_grab:
             sum += id
-        
-print(sum)
+
+    print(sum)
+
+
+if __name__ == "__main__":
+    main()
