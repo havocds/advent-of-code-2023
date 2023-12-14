@@ -1,15 +1,22 @@
 import re
 
-PATTERN = r"Card\s+(\d+):\s+"
+CARD_PATTERN = r"Card\s+(\d+):\s+"
 DIGITS = r"\d+"
+INPUT_FILE = "./input.txt"
 
-with open("input.txt") as f:
-    lines = f.readlines()
+
+def read_input(path: str) -> list:
+    with open(path) as f:
+        return [line.strip() for line in f]
+
+
+def main():
+    lines = read_input(INPUT_FILE)
 
     cards_instances = [1] * len(lines)
 
     for card_number, line in enumerate(lines, 1):
-        digits = re.sub(PATTERN, "", line.strip()).split("|")
+        digits = re.sub(CARD_PATTERN, "", line.strip()).split("|")
 
         winning_numbers = re.findall(DIGITS, digits[0])
         my_numbers = re.findall(DIGITS, digits[1])
@@ -20,4 +27,8 @@ with open("input.txt") as f:
         for idx in range(matching_numbers_count):
             cards_instances[card_number + idx] += cards_instances[card_number - 1]
 
-print(sum(cards_instances))
+    print(sum(cards_instances))
+
+
+if __name__ == "__main__":
+    main()
