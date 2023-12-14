@@ -5,7 +5,7 @@ INPUT_FILE: Final = "./test_input.txt"
 DIGITS: Final = r"\d+"
 
 
-def read_input(path) -> list:
+def read_input(path: str) -> list:
     with open(path) as f:
         return [line.strip() for line in f]
 

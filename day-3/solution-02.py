@@ -16,12 +16,12 @@ class Match:
     end: int
 
 
-def read_input(path) -> list:
+def read_input(path: str) -> list:
     with open(path) as f:
         return [line.strip() for line in f]
 
 
-def has_adjacents(mult, num) -> bool:
+def has_adjacents(mult: list[Match], num: list[Match]) -> bool:
     if (mult.row - num.row in ADJACENT_POSITIONS) and (
         mult.start - num.start in ADJACENT_POSITIONS
         or mult.end - num.end in ADJACENT_POSITIONS
